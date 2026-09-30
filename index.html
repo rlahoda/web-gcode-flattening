@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flattening Gcode Generator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Flattening Gcode Generator</h1>
+    <div class="options-container">
+      <button type="button" id="clear-prefs" disabled>Clear Saved Data</button>
+      <div id="data-found" class="data-message visually-hidden">Locally stored data found and loaded</div>
+      <div id="no-data-found" class="data-message">No locally stored data has been found.</div>
+    </div>
+  </header>
+      <h2>Choose Your Bit</h2>
+    
+<div id="bits-table" class="table"></div>
+ click a bit and edit it
+<p>Please note: if you create a bit in either inches or milimeters and change the inteface toggle at the top, the bit measurements will be converted to the chosen units.</p>
+<h2>Generator</h2>
+<div id="prefs-selectors-container" class="options-container">
+</div>
+<h3 class="alert"><b>Please Note: The following values will not change when you change units</b></h3>
+<div id="prefs-inputs-container" class="options-container">
+</div>
+<div id="prefs-material-container" class="options-container">
+</div>
+<h2>GCode Output</h2>
+<div class="options-container download-container">
+  <button id ="download-button" class="selected">Download Code</button>
+</div>
+<div class="code-container">
+  <pre id="gcode-container"></pre>
+</div>
+ 
+<footer>
+      <a href="https://github.com/rlahoda/web-gcode-flattening">View this project on Github</a>
+</footer>
+  <script src="main.js"></script>
+</body>
+</html>
