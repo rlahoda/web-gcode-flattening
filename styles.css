@@ -21,6 +21,11 @@
   
 }
 
+.code-options button {
+  margin-left: 0;
+  margin-right: 10px;
+}
+
 .toggle {
  display: flex;
   align-items:center;

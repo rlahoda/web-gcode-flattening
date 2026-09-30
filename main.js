@@ -75,10 +75,12 @@ function convertToIN(num) {
 }
 
 function deleteBit(event) {
+  console.log("delete");
+  
   const eventId = event.target.id;
-  const [type, id] = eventId.split("-")
+  const [type, id] = eventId.split("-")  
   let updatedPrefs = {...prefs};
-  let updatedBits = prefs.bits.filter(bit=> bit.id !==id)
+  let updatedBits = prefs.bits.filter(bit=> bit.id !== parseInt(id))
   updatedPrefs.bits = [...updatedBits];
   updatedPrefs.bits[0].selected = true;
   prefs = {...updatedPrefs};
@@ -209,6 +211,20 @@ function updatePrefsValues(event) {
   savePrefs();
   generatePrefs();
   generateGCode();
+}
+
+function copyGcode() {
+  const gCodeContainer = document.getElementById("gcode-container");
+  const codeText = gCodeContainer.innerHTML
+  writeClipboardText(codeText)
+}
+
+async function writeClipboardText(text) {
+  try {
+    await navigator.clipboard.writeText(text)
+  } catch (error) {
+    console.error(error.message);
+  }
 }
 
 function generatePrefs() {
@@ -670,7 +686,8 @@ function initialize() {
   generatePrefs();
   generateBits();
   generateGCode();
-  
+  const copyButton = document.getElementById("code-copy");
+  copyButton.addEventListener("click", copyGcode);
 
   // add listener to units toggle
   // add listener to bits table
