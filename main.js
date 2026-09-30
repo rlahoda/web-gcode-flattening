@@ -227,6 +227,14 @@ async function writeClipboardText(text) {
   }
 }
 
+function generateLineNumbers(count) {
+  const numberContainer = document.getElementById("code-numbers");
+  for (let i = 0; i < count; i++) {
+    numberContainer.innerHTML += `<li data-value="${i}"></li>`
+    
+  }
+}
+
 function generatePrefs() {
   const prefsSelectorContainer = document.getElementById("prefs-selectors-container");
   const prefsInputsContainer = document.getElementById("prefs-inputs-container");
@@ -518,6 +526,9 @@ function calculateStartPoints(bit) {
   return startPoints
 }
 
+function countLines(string) {
+  return string.split(/\r|\r\n|\n/g).length;
+}
 
 function generateGCode() {
   const gCodeContainer = document.getElementById("gcode-container");
@@ -652,8 +663,14 @@ M02
     document.body.removeChild(a);
   }
 
+  // const lineCount = countLines(gCode)
+  // generateLineNumbers(lineCount)
+
   const downloadButton = document.getElementById("download-button")
   downloadButton.addEventListener("click", downloadGCode);
+
+  const copyButton = document.getElementById("code-copy");
+  copyButton.addEventListener("click", copyGcode);
 }
 
 function checkDataAvailable() {
@@ -686,8 +703,6 @@ function initialize() {
   generatePrefs();
   generateBits();
   generateGCode();
-  const copyButton = document.getElementById("code-copy");
-  copyButton.addEventListener("click", copyGcode);
 
   // add listener to units toggle
   // add listener to bits table
