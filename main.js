@@ -525,11 +525,12 @@ function generateGCode() {
       }
     } 
   const startPoints = calculateStartPoints(bitValues)
+console.log(startPoints);
 
   // da big loop
   let loopCode = "";
   let primaryAxisPosition = 0;
-  let zCurrentHeight = startPoints.zStart;
+  let zCurrentHeight = startPoints.zFirstPass;
   let zLoopNeeded = false;
   let firstLoop = true;
   let primaryAxis = "Y";
@@ -539,7 +540,7 @@ function generateGCode() {
   let primaryStart = startPoints.yStart;
   let secondaryStart = startPoints.xStart;
 
-  if (startPoints.zLimit !== startPoints.zStart) {
+  if (startPoints.zLimit !== startPoints.zFirstPass) {
     zLoopNeeded = true;
   }
   
@@ -573,11 +574,11 @@ let  zLoopCode = "";
     // if it does, only go to that limit and set the flag to false
     // otherwise do another step
     zCurrentHeight = zCurrentHeight - bitValues.passDepth;
+    
     if (zCurrentHeight <= startPoints.zLimit) {
       zCurrentHeight = startPoints.zLimit
       zLoopNeeded = false;
     }
-    
     zLoopCode += `(Retract to safe height)
 Z${startPoints.zRetract}F${bitValues.plungeRate}
 (Move to start point)
