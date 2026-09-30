@@ -581,9 +581,9 @@ let  zLoopCode = "";
     zLoopCode += `(Retract to safe height)
 Z${startPoints.zRetract}F${bitValues.plungeRate}
 (Move to start point)
-G0X${startPoints.xStart}Y${startPoints.yStart}
+G00X${startPoints.xStart}Y${startPoints.yStart}
 (Step down the pass depth then start over)
-Z${zCurrentHeight}F${bitValues.plungeRate}${loopCode}`
+G01Z${zCurrentHeight}F${bitValues.plungeRate}${loopCode}`
   }
 
 const gCode = `(GCode Flattening Generator)
@@ -609,7 +609,7 @@ M05
 M6T${bitValues.num}
 (Set spindle to ${bitValues.rpm} rpm)
 M03S${bitValues.rpm}
-G0X${startPoints.xStart}Y${startPoints.yStart}
+G01X${startPoints.xStart}Y${startPoints.yStart}
 Z${startPoints.zRetract}
 Z${startPoints.zFirstPass}F${bitValues.plungeRate}${loopCode}${zLoopCode}
 (Job Complete. Raise spindle to safe height)
