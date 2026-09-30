@@ -219,11 +219,23 @@ function copyGcode() {
   writeClipboardText(codeText)
 }
 
+function removeMessage() {
+  const messageBox = document.getElementById("copy-confirm");
+  messageBox.classList.toggle("visually-hidden");
+}
+
 async function writeClipboardText(text) {
+  const messageBox = document.getElementById("copy-confirm");
   try {
     await navigator.clipboard.writeText(text)
+    messageBox.innerHTML = "<span class='message-success'>Code Copied</span>";
+    messageBox.classList.toggle("visually-hidden");
+    setTimeout(removeMessage, 3000);
   } catch (error) {
     console.error(error.message);
+    messageBox.innerHTML = "<span class='message-alert'>Code Copy Failed</span>";
+    messageBox.classList.toggle("visually-hidden");
+    setTimeout(removeMessage, 3000);
   }
 }
 

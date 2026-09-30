@@ -126,6 +126,19 @@ button:disabled {
   font-size: 13px;
 }
 
+.message-success {
+  display: block;
+  background-color: rgb(2, 108, 2);
+  color: #fff;
+  padding: 5px;
+}
+.message-alert {
+  display: block;
+  color: #fff;
+  background-color: rgb(193, 0, 0);
+  padding: 5px;
+}
+
   .center-align {
     text-align: center;
   }
