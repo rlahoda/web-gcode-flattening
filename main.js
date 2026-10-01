@@ -261,16 +261,16 @@ function generatePrefs() {
   const angleButtons = `
   <div class="toggle" id="angle">
     <h3 class="inline">Angle (degrees)</h3>
-    <button type="button" class="${prefs.angle == 0 ?"selected":""}" id="angle-0">0</button>
-    <button type="button" id="angle-90" class="${prefs.angle == 90 ?"selected":""}">90</button>
+    <button disabled type="button" class="${prefs.angle == 0 ?"selected":""}" id="angle-0">0</button>
+    <button disabled type="button" id="angle-90" class="${prefs.angle == 90 ?"selected":""}">90</button>
   </div>`
 
   // set z zero
   const zButtons = `
    <div class="toggle" id="z-zero">
     <h3 class="inline">Z Zero Point</h3>
-    <button type="button" id="zZeroPoint-top" class="${prefs.zZeroPoint === "top"?"selected":""}">Top</button>
-    <button type="button" id="zZeroPoint-bottom" class="${prefs.zZeroPoint === "bottom"?"selected":""}">Bottom</button>
+    <button disabled  type="button" id="zZeroPoint-top" class="${prefs.zZeroPoint === "top"?"selected":""}">Top</button>
+    <button disabled type="button" id="zZeroPoint-bottom" class="${prefs.zZeroPoint === "bottom"?"selected":""}">Bottom</button>
   </div>`
 
   // set xy zero
@@ -279,7 +279,7 @@ function generatePrefs() {
     <h3 class="inline">X/Y Zero Point</h3>
     <button type="button" id="xyZeroPoint-bottomLeft" class="${prefs.xyZeroPoint === "bottomLeft"?"selected":""}">Bottom Left</button>
     <button type="button" id="xyZeroPoint-centerLeft" class="${prefs.xyZeroPoint === "centerLeft"?"selected":""}">Center Left</button>
-    <button type="button" id="xyZeroPoint-topLeft" class="${prefs.xyZeroPoint === "topLeft"?"selected":""}">Top Left</button>
+    <button disabled type="button" id="xyZeroPoint-topLeft" class="${prefs.xyZeroPoint === "topLeft"?"selected":""}">Top Left</button>
     <button type="button" id="xyZeroPoint-center" class="${prefs.xyZeroPoint === "center"?"selected":""}">Center</button>
   </div>`
 
@@ -597,15 +597,27 @@ console.log(startPoints);
   // y stays the same, set x as far end amount
   // add stepover to y, x stays the same
   // x goes back to start
+
+  // go to secondary axis limit
+  loopCode += `
+${secondaryAxis}${secondaryLimit}F${bitValues.feedRate}`
+
   while (primaryAxisPosition < primaryLimit) {
-    // go to secondary axis limit, step up the stepover amount, come back to secondary axis start
     primaryAxisPosition = primaryAxisPosition + bitValues.stepover;
+    // the head has completed the first traverse, step up to the next and send it back
     loopCode += `
-${secondaryAxis}${secondaryLimit}${firstLoop ? `F${bitValues.feedRate}`:""}
 ${primaryAxis}${primaryAxisPosition}
 ${secondaryAxis}${secondaryStart}`
-    firstLoop = false;
+// head has reached the end of that move check to make sure it still needs to continue
+if (primaryAxisPosition < primaryLimit) {
+  // if it does, calculate the move, move up and send the head back the opposite direction
+  primaryAxisPosition = primaryAxisPosition + bitValues.stepover;
+  loopCode += `
+${primaryAxis}${primaryAxisPosition}
+${secondaryAxis}${secondaryLimit}`;
   }
+}
+
 let  zLoopCode = "";
   while (zLoopNeeded) {
     // it's already done 1 pass, now step down again and repeat
@@ -649,9 +661,9 @@ M05
 M6T${bitValues.num}
 (Set spindle to ${bitValues.rpm} rpm)
 M03S${bitValues.rpm}
-G01X${startPoints.xStart}Y${startPoints.yStart}
+G0X${startPoints.xStart}Y${startPoints.yStart}
 Z${startPoints.zRetract}
-Z${startPoints.zFirstPass}F${bitValues.plungeRate}${loopCode}${zLoopCode}
+G01Z${startPoints.zFirstPass}F${bitValues.plungeRate}${loopCode}${zLoopCode}
 (Job Complete. Raise spindle to safe height)
 G0Z${startPoints.zRetract}
 (Stop spindle)
