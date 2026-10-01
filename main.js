@@ -269,8 +269,8 @@ function generatePrefs() {
   const zButtons = `
    <div class="toggle" id="z-zero">
     <h3 class="inline">Z Zero Point</h3>
-    <button disabled  type="button" id="zZeroPoint-top" class="${prefs.zZeroPoint === "top"?"selected":""}">Top</button>
-    <button disabled type="button" id="zZeroPoint-bottom" class="${prefs.zZeroPoint === "bottom"?"selected":""}">Bottom</button>
+    <button type="button" id="zZeroPoint-top" class="${prefs.zZeroPoint === "top"?"selected":""}">Top</button>
+    <button type="button" id="zZeroPoint-bottom" class="${prefs.zZeroPoint === "bottom"?"selected":""}">Bottom</button>
   </div>`
 
   // set xy zero
