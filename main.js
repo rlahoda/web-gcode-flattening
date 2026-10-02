@@ -40,6 +40,7 @@ let prefs = {
     }
   ]
 }
+let gCode = "";
 
 let timeout;
 
@@ -219,6 +220,14 @@ function copyGcode() {
   writeClipboardText(codeText)
 }
 
+async function copyGcodePreview() {
+  const gCodeContainer = document.getElementById("gcode-container");
+  const codeText = gCodeContainer.innerHTML
+  await writeClipboardText(codeText);
+  // open new tab to nc viewer page
+  window.open("https://ncviewer.com/");  
+}
+
 function removeMessage() {
   const messageBox = document.getElementById("copy-confirm");
   messageBox.classList.toggle("visually-hidden");
@@ -237,6 +246,20 @@ async function writeClipboardText(text) {
     messageBox.classList.toggle("visually-hidden");
     setTimeout(removeMessage, 3000);
   }
+}
+
+function downloadGCode() {  
+  const textBlob = new Blob([gCode], { type: "text/plain" });
+  const url = URL.createObjectURL(textBlob);
+  const a = document.createElement("a");
+  a.classList.add("visually-hidden");
+  a.href = url;
+  a.download = "flatten.nc";
+  document.body.appendChild(a);
+  a.click();
+  // Cleanup
+  URL.revokeObjectURL(url);
+  document.body.removeChild(a);
 }
 
 function generateLineNumbers(count) {
@@ -261,8 +284,8 @@ function generatePrefs() {
   const angleButtons = `
   <div class="toggle" id="angle">
     <h3 class="inline">Angle (degrees)</h3>
-    <button disabled type="button" class="${prefs.angle == 0 ?"selected":""}" id="angle-0">0</button>
-    <button disabled type="button" id="angle-90" class="${prefs.angle == 90 ?"selected":""}">90</button>
+    <button type="button" class="${prefs.angle == 0 ?"selected":""}" id="angle-0">0</button>
+    <button type="button" id="angle-90" class="${prefs.angle == 90 ?"selected":""}">90</button>
   </div>`
 
   // set z zero
@@ -279,7 +302,7 @@ function generatePrefs() {
     <h3 class="inline">X/Y Zero Point</h3>
     <button type="button" id="xyZeroPoint-bottomLeft" class="${prefs.xyZeroPoint === "bottomLeft"?"selected":""}">Bottom Left</button>
     <button type="button" id="xyZeroPoint-centerLeft" class="${prefs.xyZeroPoint === "centerLeft"?"selected":""}">Center Left</button>
-    <button disabled type="button" id="xyZeroPoint-topLeft" class="${prefs.xyZeroPoint === "topLeft"?"selected":""}">Top Left</button>
+    <button type="button" id="xyZeroPoint-topLeft" class="${prefs.xyZeroPoint === "topLeft"?"selected":""}">Top Left</button>
     <button type="button" id="xyZeroPoint-center" class="${prefs.xyZeroPoint === "center"?"selected":""}">Center</button>
   </div>`
 
@@ -361,7 +384,7 @@ function generateBits(id) {
       <div class="table-header"></div>
       <div class="table-content"></div>
       <div class="table-content"><input class="update-bit center-align" type="text" id="name" name="name" required value="${bitToEdit.name}"/></div>
-      <div class="table-content"><input class="update-bit" type="number" id="num" name="num" size="10" required value="${bitToEdit.num}"/></div>
+      <div class="table-content"><input class="update-bit" type="number" id="num" name="num" size="4" required value="${bitToEdit.num}"/></div>
       <div class="table-content"><input class="update-bit" type="number" id="diameter" name="diameter" required size="10" value="${bitToEdit.diameter}"/></div>
       <div class="table-content"><input class="update-bit" type="number" id="stepover" name="stepover" required size="10" value="${bitToEdit.stepover}" /></div>
       <div class="table-content"><input class="update-bit" type="number" id="feedRate" name="feedRate" required size="10" value="${bitToEdit.feedRate}" /></div>
@@ -389,13 +412,13 @@ function generateBits(id) {
       <div class="table-header"></div>
       <div class="table-content"></div>
       <div class="table-content"><input class="new-bit center-align" type="text" id="name" name="name" required/></div>
-      <div class="table-content"><input class="new-bit" type="number" id="num" name="num" size="10" required/></div>
-      <div class="table-content"><input class="new-bit" type="number" id="diameter" name="diameter" required size="10" /></div>
-      <div class="table-content"><input class="new-bit" type="number" id="stepover" name="stepover" required size="10" /></div>
-      <div class="table-content"><input class="new-bit" type="number" id="feedRate" name="feedRate" required size="10" /></div>
-      <div class="table-content"><input class="new-bit" type="number" id="passDepth" name="passDepth" required size="10" /></div>
-      <div class="table-content"><input class="new-bit" type="number" id="plungeRate" name="plungeRate" required size="10" /></div>
-      <div class="table-content"><input class="new-bit" type="number" id="rpm" name="rpm" required size="10" /></div>
+      <div class="table-content"><input class="new-bit" type="number" id="num" name="num" size="4" required/></div>
+      <div class="table-content"><input class="new-bit" type="number" id="diameter" name="diameter" required size="6" /></div>
+      <div class="table-content"><input class="new-bit" type="number" id="stepover" name="stepover" required size="6" /></div>
+      <div class="table-content"><input class="new-bit" type="number" id="feedRate" name="feedRate" required size="6" /></div>
+      <div class="table-content"><input class="new-bit" type="number" id="passDepth" name="passDepth" required size="6" /></div>
+      <div class="table-content"><input class="new-bit" type="number" id="plungeRate" name="plungeRate" required size="6" /></div>
+      <div class="table-content"><input class="new-bit" type="number" id="rpm" name="rpm" required size="6" /></div>
       <div class="table-content"><input class="new-bit center-align" disabled type="text" id="units" name="units" size="2" value="${prefs.units}" /></div>
       <div class="table-content"><button id="add-1">Add Bit</button></div>
       <div class="table-content"></div>
@@ -497,8 +520,8 @@ function calculateStartPoints(bit) {
     yStart: 0,
     zStart: 0, 
     zFirstPass: 0,// how deep the first pass goes
-    xLimit: prefs.materialWidth,
-    yLimit: prefs.materialHeight,
+    xLimit: parseFloat(prefs.materialWidth),
+    yLimit: parseFloat(prefs.materialHeight),
     zLimit: 0, // lowest the z will go
     zRetract: 0,
   }
@@ -517,19 +540,20 @@ function calculateStartPoints(bit) {
 
   switch (prefs.xyZeroPoint) {
     case "centerLeft":
-      startPoints.yStart = 0 - (0.5 * prefs.materialHeight);
-      startPoints.yLimit = 0 + (0.5 * prefs.materialHeight);
-      startPoints.xLimit = 0 + prefs.materialWidth;
+      startPoints.yStart = parseFloat(0 - (0.5 * prefs.materialHeight));
+      startPoints.yLimit = parseFloat(0 + (0.5 * prefs.materialHeight));
+      startPoints.xLimit = parseFloat(0 + prefs.materialWidth);
       break;
     case "topLeft":
-      startPoints.yStart = 0 - prefs.materialHeight;
-      startPoints.xLimit = 0 + prefs.materialWidth;
+      startPoints.yStart = parseFloat(0 - prefs.materialHeight);
+      startPoints.yLimit = 0;
+      startPoints.xLimit = parseFloat(0 + prefs.materialWidth);
       break;
     case "center":
-      startPoints.yStart = 0 - (0.5 * prefs.materialHeight);
-      startPoints.xStart = 0 - (0.5 * prefs.materialWidth);
-      startPoints.yLimit = 0 + (0.5 * prefs.materialHeight);
-      startPoints.xLimit = 0 + (0.5 * prefs.materialWidth);
+      startPoints.yStart = parseFloat(0 - (0.5 * prefs.materialHeight));
+      startPoints.xStart = parseFloat(0 - (0.5 * prefs.materialWidth));
+      startPoints.yLimit = parseFloat(0 + (0.5 * prefs.materialHeight));
+      startPoints.xLimit = parseFloat(0 + (0.5 * prefs.materialWidth));
       break;
   
     default:
@@ -564,7 +588,6 @@ function generateGCode() {
       }
     } 
   const startPoints = calculateStartPoints(bitValues)
-console.log(startPoints);
 
   // da big loop
   let loopCode = "";
@@ -587,6 +610,8 @@ console.log(startPoints);
   if (prefs.angle == 0) {
     primaryAxisPosition = startPoints.yStart
   } else {
+    primaryAxis = "X";
+    secondaryAxis = "Y";
     primaryLimit = startPoints.xLimit;
     secondaryLimit = startPoints.yLimit;
     primaryAxisPosition = startPoints.xStart
@@ -638,7 +663,7 @@ G00X${startPoints.xStart}Y${startPoints.yStart}
 G01Z${zCurrentHeight}F${bitValues.plungeRate}${loopCode}`
   }
 
-const gCode = `(GCode Flattening Generator)
+  gCode = `(GCode Flattening Generator)
 (Use at your own risk)
 (Everything is an experiment)
 (Check the Carbide 3d forums if you need help)
@@ -673,19 +698,6 @@ M02
   `
   gCodeContainer.innerHTML = gCode;
 
-  function downloadGCode() {
-    const textBlob = new Blob([gCode], { type: "text/plain" });
-    const url = URL.createObjectURL(textBlob);
-    const a = document.createElement("a");
-    a.classList.add("visually-hidden");
-    a.href = url;
-    a.download = "flatten.nc";
-    document.body.appendChild(a);
-    a.click();
-    // Cleanup
-    URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-  }
 
   // const lineCount = countLines(gCode)
   // generateLineNumbers(lineCount)
@@ -695,6 +707,9 @@ M02
 
   const copyButton = document.getElementById("code-copy");
   copyButton.addEventListener("click", copyGcode);
+
+  const copyButtonPreview = document.getElementById("code-copy-preview");
+  copyButtonPreview.addEventListener("click", copyGcodePreview);
 }
 
 function checkDataAvailable() {
