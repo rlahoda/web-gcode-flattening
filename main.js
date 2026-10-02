@@ -75,9 +75,7 @@ function convertToIN(num) {
   return parseFloat((num * 0.0393700787402).toFixed(3));
 }
 
-function deleteBit(event) {
-  console.log("delete");
-  
+function deleteBit(event) {  
   const eventId = event.target.id;
   const [type, id] = eventId.split("-")  
   let updatedPrefs = {...prefs};
@@ -122,22 +120,20 @@ function addBit() {
 
 function editBit(event) {
   const eventId = event.target.id;
-  const [type, id] = eventId.split("-");
-  console.log(id);
-  
-  generateBits(id);
+  const [type, id] = eventId.split("-");  
+  generateBits(parseInt(id));
 }
 
 function updateBit(event) {
   const updateInputs = document.getElementsByClassName("update-bit");
   const eventId = event.target.id;
   const [type, id] = eventId.split("-");
-  console.log(id);
+  const idNum = parseInt(id)
   const updateBit =  {
       selected: false,
       name: "",
       num: "",
-      id: id,
+      id: idNum,
       diameter: 0,
       feedRate: 0,
       passDepth: 0,
@@ -153,10 +149,9 @@ function updateBit(event) {
       updateBit[input.id] = input.value;
     }
   }
-  console.log(updateBit);
   
   let updatedPrefs = {...prefs};
-  const filteredBits = updatedPrefs.bits.filter(bit => bit.id !== id);
+  const filteredBits = updatedPrefs.bits.filter(bit => bit.id !== idNum);
   const selectedBit = filteredBits.filter(bit => bit.selected);
   if (selectedBit.length === 0) {
     updateBit.selected = true;
@@ -364,7 +359,6 @@ function generateBits(id) {
   
   if (id) {
     const bitProperties = prefs.bits.filter(bit => bit.id === id);
-    console.log(bitProperties);
     bitToEdit = {...bitProperties[0]};
   }
 
