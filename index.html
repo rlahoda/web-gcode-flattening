@@ -11,17 +11,23 @@
   <title>Flattening Gcode Generator</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="">
   <header>
     <h1>Flattening Gcode Generator</h1>
-    <div class="options-container">
-      <button type="button" id="clear-prefs" disabled>Clear Saved Data</button>
-      <div id="data-found" class="data-message visually-hidden">Locally stored data found and loaded</div>
-      <div id="no-data-found" class="data-message">No locally stored data has been found.</div>
+    <div class="header-container">
+      <div class="options-primary">
+        <button type="button" id="touch-enable">Touch Mode</button>
+      </div>
+      <div class="options-secondary">
+        <button type="button" id="clear-prefs" disabled>Clear Saved Data</button>
+        <div id="data-found" class="data-message visually-hidden">Locally stored data found and loaded</div>
+        <div id="no-data-found" class="data-message">No locally stored data has been found.</div>
+      </div>
     </div>
   </header>
-      <h2>Choose Your Bit</h2>
-    
+  <div class="controls-container">
+    <h2>Choose Your Bit</h2>
+  
 <div id="bits-table" class="table"></div>
 <p>Please note: if you create a bit in either inches or milimeters and change the inteface toggle at the top, the bit measurements will be converted to the chosen units.</p>
 <h2>Generator</h2>
@@ -32,18 +38,44 @@
 </div>
 <div id="prefs-material-container" class="options-container">
 </div>
-<h2>GCode Output</h2>
-<div class="options-container code-options">
-  <button id ="download-button" class="selected">Download Code</button>
-  <button type="button" class="" id="code-copy">Copy Gcode to Clipboard</button>
-  <button type="button" class="" id="code-copy-preview">Copy Gcode to Clipboard and Open NC Viewer</button>
-  <div id="copy-confirm" class="visually-hidden"></div>
-</div>
-<div class="code-container">
-  <!-- <ol class="code-numbers" id="code-numbers">
- 
-  </ol> -->
-  <pre id="gcode-container"></pre>
+  </div>
+  <div id="input-container" class="input-container">
+    <div id="touch-readout" class="readout">0.000</div>
+    <button value="1" type="button">1</button>
+    <button value="2" type="button">2</button>
+    <button value="3" type="button">3</button>
+    <button value="4" type="button">4</button>
+    <button value="5" type="button">5</button>
+    <button value="6" type="button">6</button>
+    <button value="7" type="button">7</button>
+    <button value="8" type="button">8</button>
+    <button value="9" type="button">9</button>
+    <button value="." type="button">.</button>
+    <button value="0" type="button">0</button>
+    <button value="back" type="button"><<</button>
+    <button value="enter" type="button">Enter</button>
+    <div></div>
+    <button value="clear" type="button">Clear</button>
+    
+  </div>
+<div class="code-wrapper">
+  <h2>GCode Output</h2>
+  <div class="options-container code-options">
+    <button id ="download-button" class="selected">Download Code</button>
+    <button type="button" class="" id="code-copy">Copy Gcode to Clipboard</button>
+    <button type="button" class="" id="code-copy-preview">Copy Gcode to Clipboard and Open NC Viewer</button>
+    <div id="copy-confirm" class="visually-hidden"></div>
+  </div>
+  
+    <details class="code-container">
+      <summary>
+    <h3 class="code-heading">View Gcode Output</h3>
+      </summary>
+      <!-- <ol class="code-numbers" id="code-numbers">
+     
+      </ol> -->
+      <pre id="gcode-container"></pre>
+    </details>
 </div>
  
 <footer>

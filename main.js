@@ -11,6 +11,7 @@ let prefs = {
   materialWidth: 10,
   materialHeight: 10,
   materialThickness: 1,
+  touch: true,
   bits: [
     {
       selected: true,
@@ -43,6 +44,9 @@ let prefs = {
 let gCode = "";
 
 let timeout;
+let touchInputValue = "0";
+let touchInput = "";
+let touchInputDirty = false;
 
 function savePrefs() {
   // set timer to give buffer in case any changes come in in the mean time
@@ -209,6 +213,103 @@ function updatePrefsValues(event) {
   generateGCode();
 }
 
+function setReadoutValue() {
+  // get id to get value of
+  console.log({touchInputValue});
+  
+  const selectedPref = document.getElementById(touchInput);
+  selectedPref.classList.add("selected");
+  const value = selectedPref.value;
+  console.log({value});
+  
+  // set that value in the 
+  touchInputValue = value;
+  console.log({touchInputValue});
+  // update readout
+  refreshReadout()
+}
+
+function refreshReadout() {
+  const readout = document.getElementById("touch-readout");
+  console.log("refresh readout");
+  
+  console.log({touchInputValue});
+  readout.innerHTML = touchInputValue;
+}
+
+function processKeypadInput(key) {
+  switch (key) {
+    case "enter":
+      prefs[touchInput] = parseFloat(touchInputValue);
+      savePrefs();
+      generatePrefs();
+      generateGCode();
+      break;
+    case "deselect":
+      if (touchInput) {
+        const selectedPref = document.getElementById(touchInput);
+        selectedPref.classList.remove("selected")
+      }
+      touchInputValue = "0.000";
+      touchInputDirty = false;
+      touchInput = "";
+      generateInputKeypad();
+      break;
+    case ".":
+      // check for existing decimal point, if none, add it
+      touchInputValue.includes(".") ? "" : touchInputValue += ".";
+      break;
+    case "clear":
+      touchInputValue = "0";
+      break;
+    case "back":
+      // remove last digit from readout
+      console.log({touchInputValue});
+      touchInputValue = touchInputValue.slice(0, -1);
+      touchInputValue === "" ? touchInputValue = "0" : ""
+      break;
+  
+    default:
+        touchInputValue === "0" ?  touchInputValue = key : touchInputValue += key;
+      break;
+  }
+
+  refreshReadout()
+}
+
+function updateReadoutValue(event) {
+  const value = event.target.value
+  console.log("update readout value");
+  
+  console.log({value});
+  console.log({touchInputDirty});
+  console.log({touchInputValue});
+  
+
+  if (!touchInputDirty) {
+    touchInputDirty = true;
+  } 
+  processKeypadInput(value);
+
+  // refreshReadout()
+}
+
+function selectTouchInput(event) {
+  const id = event.target.id
+  console.log(id);
+  if (touchInput) {
+    const previousPref = document.getElementById(touchInput);
+    if (previousPref) {
+      previousPref.classList.remove('selected');
+    }
+  }
+  touchInput = id;
+  console.log({touchInput});
+  console.log({touchInputValue});
+  generateInputKeypad()
+  setReadoutValue()
+}
+
 function copyGcode() {
   const gCodeContainer = document.getElementById("gcode-container");
   const codeText = gCodeContainer.innerHTML
@@ -312,41 +413,120 @@ function generatePrefs() {
    </div>
   `
 
+  const touchInputs = `
+  <div class="toggle">
+   <h3 class="inline">Depth of Cut ${prefs.units === "in" ? "(in)" : "(mm)"}</h3>
+   <button class="prefs-inputs" type="button" id="depthOfCut" value="${prefs.depthOfCut}">
+   ${prefs.depthOfCut}</button>
+   </div>
+   <div class="toggle">
+   <h3 class="inline">Retract Height ${prefs.units === "in" ? "(in)" : "(mm)"}</h3>
+   <button class="prefs-inputs" type="button" id="retractHeight"value="${prefs.retractHeight}">${prefs.retractHeight}</button>
+   </div>
+  `
+
     const material = `
   <div class="toggle">
    <h3 class="inline">Material Thickness</h3>
-   <input class="material-inputs" type="number" id="materialThickness" size="6" value="${prefs.materialThickness}" />
+   <input class="prefs-inputs material-inputs" type="number" id="materialThickness" size="6" value="${prefs.materialThickness}" />
    </div>
    <div class="toggle">
    <h3 class="inline">Material Width</h3>
-   <input class="material-inputs" type="number" id="materialWidth" size="6" value="${prefs.materialWidth}" />
+   <input class="prefs-inputs material-inputs" type="number" id="materialWidth" size="6" value="${prefs.materialWidth}" />
    </div>
    <div class="toggle">
    <h3 class="inline">Material Height</h3>
-   <input class="material-inputs" type="number" id="materialHeight" size="6" value="${prefs.materialHeight}" />
+   <input class="prefs-inputs material-inputs" type="number" id="materialHeight" size="6" value="${prefs.materialHeight}" />
    </div>
    `
+
+  const touchMaterial = `
+    <div class="toggle">
+   <h3 class="inline">Material Thickness</h3>
+   <button class="prefs-inputs material-inputs" type="number" id="materialThickness" size="6" value="${prefs.materialThickness}">${prefs.materialThickness}</button>
+   </div>
+   <div class="toggle">
+   <h3 class="inline">Material Width</h3>
+   <button class="prefs-inputs material-inputs" type="number" id="materialWidth" size="6" value="${prefs.materialWidth}">${prefs.materialWidth}</button>
+   </div>
+   <div class="toggle">
+   <h3 class="inline">Material Height</h3>
+   <button class="prefs-inputs material-inputs" type="number" id="materialHeight" size="6" value="${prefs.materialHeight}">${prefs.materialHeight}</button>
+   </div>
+  `
+  
 
   prefsSelectorContainer.innerHTML = unitsButtons + zButtons + xyButtons + angleButtons;
  const buttons = prefsSelectorContainer.getElementsByTagName("button");
 
- prefsInputsContainer.innerHTML = inputs;
-const prefsInputs = prefsInputsContainer.getElementsByTagName("input")
+ prefsInputsContainer.innerHTML = prefs.touch ? touchInputs : inputs;
+ 
+ prefsMaterialContainer.innerHTML = prefs.touch ? touchMaterial : material;
 
-prefsMaterialContainer.innerHTML = material;
-const materialInputs = prefsMaterialContainer.getElementsByTagName("input")
+ for (const button of buttons) {
+   button.addEventListener("click", selectPref);
+ }
 
+  if (prefs.touch) {
+    if (touchInput) {
+      const selectedPref = document.getElementById(touchInput);
+      selectedPref.classList.add("selected")
+    }
+    const prefsInputs = prefsInputsContainer.getElementsByTagName("button")
+    const materialInputs = prefsMaterialContainer.getElementsByTagName("button")
+   
+     for (const input of prefsInputs) {
+       input.addEventListener("click", selectTouchInput)
+     }
+     
+     for (const input of materialInputs) {
+       input.addEventListener("click", selectTouchInput)
+     }
+    
+  } else {
+    const prefsInputs = prefsInputsContainer.getElementsByTagName("input")
+    const materialInputs = prefsMaterialContainer.getElementsByTagName("input")
+   
+     for (const input of prefsInputs) {
+       input.addEventListener("change", updatePrefsValues)
+     }
+     
+     for (const input of materialInputs) {
+       input.addEventListener("change", updatePrefsValues)
+     }
 
-  for (const button of buttons) {
-    button.addEventListener("click", selectPref);
   }
 
-  for (const input of prefsInputs) {
-    input.addEventListener("change", updatePrefsValues)
-  }
-  
-  for (const input of materialInputs) {
-    input.addEventListener("change", updatePrefsValues)
+}
+
+function generateInputKeypad() {
+  if (prefs.touch) {
+    const inputContainer = document.getElementById('input-container');
+    console.log(inputContainer);
+    
+    inputContainer.innerHTML = `
+      <div id="touch-readout" class="readout">0.000</div>
+    <button value="1" type="button" ${touchInput ? "" : "disabled"}>1</button>
+    <button value="2" type="button" ${touchInput ? "" : "disabled"}>2</button>
+    <button value="3" type="button" ${touchInput ? "" : "disabled"}>3</button>
+    <button value="4" type="button" ${touchInput ? "" : "disabled"}>4</button>
+    <button value="5" type="button" ${touchInput ? "" : "disabled"}>5</button>
+    <button value="6" type="button" ${touchInput ? "" : "disabled"}>6</button>
+    <button value="7" type="button" ${touchInput ? "" : "disabled"}>7</button>
+    <button value="8" type="button" ${touchInput ? "" : "disabled"}>8</button>
+    <button value="9" type="button" ${touchInput ? "" : "disabled"}>9</button>
+    <button value="." type="button" ${touchInput ? "" : "disabled"}>.</button>
+    <button value="0" type="button" ${touchInput ? "" : "disabled"}>0</button>
+    <button value="back" type="button" ${touchInput ? "" : "disabled"}><<</button>
+    <button value="enter" type="button" ${touchInput ? "" : "disabled"}>Enter</button>
+    <button value="clear" type="button" ${touchInput ? "" : "disabled"}>Clear</button>
+    <button value="deselect" type="button" class="touch-button--small-text" ${touchInput ? "" : "disabled"}>Deselect</button>
+    `;
+
+    const buttons = inputContainer.getElementsByTagName("button");
+    for (const button of buttons) {
+      button.addEventListener("click", updateReadoutValue);
+    }
   }
 }
 
@@ -367,11 +547,11 @@ function generateBits(id) {
       <div class="table-header"></div>
       <div class="table-header">Name</div>
       <div class="table-header">#</div>
-      <div class="table-header">Diameter ${prefs.units === "in" ? "(in)" : "(mm)"}</div>
-      <div class="table-header">Stepover ${prefs.units === "in" ? "(in)" : "(mm)"}</div>
-      <div class="table-header">Feed Rate ${prefs.units === "in" ? "(in/min)" : "(mm/min)"}</div>
-      <div class="table-header">Pass Depth ${prefs.units === "in" ? "(in)" : "(mm)"}</div>
-      <div class="table-header">Plunge Rate ${prefs.units === "in" ? "(in/min)" : "(mm/min)"}</div>
+      <div class="table-header">Diameter<br> ${prefs.units === "in" ? "(in)" : "(mm)"}</div>
+      <div class="table-header">Stepover<br> ${prefs.units === "in" ? "(in)" : "(mm)"}</div>
+      <div class="table-header">Feed Rate<br> ${prefs.units === "in" ? "(in/min)" : "(mm/min)"}</div>
+      <div class="table-header">Pass Depth<br> ${prefs.units === "in" ? "(in)" : "(mm)"}</div>
+      <div class="table-header">Plunge Rate<br> ${prefs.units === "in" ? "(in/min)" : "(mm/min)"}</div>
       <div class="table-header">RPM</div>
       <div class="table-header">Original Units</div>
       <div class="table-header"></div>
@@ -395,11 +575,11 @@ function generateBits(id) {
       <div class="table-header"></div>
       <div class="table-header">Name</div>
       <div class="table-header">#</div>
-      <div class="table-header">Diameter ${prefs.units === "in" ? "(in)" : "(mm)"}</div>
-      <div class="table-header">Stepover ${prefs.units === "in" ? "(in)" : "(mm)"}</div>
-      <div class="table-header">Feed Rate ${prefs.units === "in" ? "(in/min)" : "(mm/min)"}</div>
-      <div class="table-header">Pass Depth ${prefs.units === "in" ? "(in)" : "(mm)"}</div>
-      <div class="table-header">Plunge Rate ${prefs.units === "in" ? "(in/min)" : "(mm/min)"}</div>
+      <div class="table-header">Diameter<br>${prefs.units === "in" ? "(in)" : "(mm)"}</div>
+      <div class="table-header">Stepover<br>${prefs.units === "in" ? "(in)" : "(mm)"}</div>
+      <div class="table-header">Feed Rate<br>${prefs.units === "in" ? "(in/min)" : "(mm/min)"}</div>
+      <div class="table-header">Pass Depth<br>${prefs.units === "in" ? "(in)" : "(mm)"}</div>
+      <div class="table-header">Plunge Rate<br>${prefs.units === "in" ? "(in/min)" : "(mm/min)"}</div>
       <div class="table-header">RPM</div>
       <div class="table-header">Original Units</div>
       <div class="table-header"></div>
@@ -726,14 +906,30 @@ function checkDataAvailable() {
   }
 }
 
+function setTouch() {
+  if (prefs.touch) {
+    const body = document.getElementsByTagName("body")[0];
+    body.classList.toggle("touch")
+  }
+}
 
+function toggleTouch() {
+  prefs.touch = !prefs.touch
+  const body = document.getElementsByTagName("body")[0];
+  body.classList.toggle("touch")
+  savePrefs();
+}
 
 
 function initialize() {
   // check local storage for prefs and load if they exist
   checkDataAvailable();
-  
+  setTouch();
+  const touchButton = document.getElementById('touch-enable');
+  touchButton.addEventListener("click",toggleTouch)
+
   generatePrefs();
+  generateInputKeypad()
   generateBits();
   generateGCode();
 

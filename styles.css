@@ -10,10 +10,37 @@
   width: 1px;
 }
 
+body {
+  display: block;
+}
+
+body.touch {
+  display: grid;
+  grid-template-columns: 1fr min-content;
+  grid-template-rows: max-content max-content max-content;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "header header"
+    "controls input"
+    "code code";
+}
+
+body.touch header { grid-area: header; }
+
+body.touch .controls-container {
+   grid-area: controls; 
+  }
+
+
+body.touch .code-wrapper { grid-area: code; }
+
+
 .options-container {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  margin-bottom: 20px;
 }
 
 .data-message {
@@ -69,10 +96,15 @@ button:disabled {
   color: #adacac;
 }
 
+.touch button {
+  min-height: 60px;
+  min-width: 80px;
+}
+
 .table {
   display: grid;
   /* grid-template-columns: repeat(11, 1fr); */
-  grid-template-columns: 36px 1fr min-content 1fr 1fr 1fr 1fr 1fr 1fr 1fr max-content max-content;
+  grid-template-columns: 36px 1fr min-content 1fr 1fr 1fr 1fr 1fr 1fr 1fr max-content min-content;
   grid-template-rows: 1fr;
   grid-column-gap: 0;
   grid-row-gap: 5px;
@@ -99,9 +131,20 @@ button:disabled {
   .new-bit {
     width: auto;
   }
+.touch header {
+  display: flex;
+  align-items: center;
+}
 
-  .options-container {
-    margin-bottom: 20px;
+  .header-container {
+    
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .options-secondary {
+    display: flex;
+    align-items: center;
   }
 
   .download-container button{
@@ -118,12 +161,62 @@ button:disabled {
     text-align: right;
   }
 
+  .touch .prefs-inputs {
+    text-align: center;
+  }
+
+  .input-container {
+    display: none;
+  }
+
+.touch .input-container {  
+  grid-area: input;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 75px 100px 100px 100px 100px 100px;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  border: solid 10px gray;
+  background-color: gray;
+  height: 575px;
+}
+
+.input-container .readout {
+  grid-column: span 3;
+  border: 4px solid grey;
+  color: #fff;
+  background-color: #000;
+  justify-content: flex-end;
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  font-size: 30px;
+  font-family: monospace;
+}
+
+.input-container button {
+  min-width: 100px;
+  font-size: 30px;
+  margin: 10px;
+  background-color: #fff;
+}
+
+.input-container button.touch-button--small-text {
+  font-size: 20px;
+}
+
+
 .code-container {
   padding: 10px;
   background-color: #000;
   color: #fff;
   font-family: monospace, monospace;
   display: flex;
+  flex-direction:column;
+}
+
+.code-heading {
+  display: inline;
 }
 
 .code-numbers {
